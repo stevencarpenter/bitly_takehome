@@ -43,10 +43,31 @@ def get_bitlinks(auth_token, group_guid) -> list:
         return links
 
 
-def get_country_clicks(auth_token, bitlink, days=30, country=None):
-    lookback_epoch = int((dt.now() - timedelta(days=days)).timestamp())
-    response = requests.get(url=f"https://api-ssl.bitly.com/v4/bitlinks/{bitlink}/countries",
+def get_country_clicks(auth_token, bitlink, unit,  units=30) -> dict:
+    """
+    Takes a bitlink and params to determine lookback period and returns
+    a dictionary of countries and thier click totals.
+
+    :param auth_token: bitly auth token
+    :param bitlink: bitlink id which is the url without the https://
+    :param unit: unit of time for the lookback units. Must be a member of
+                 unit_enum list defined below.
+    :param units: number of units to look back. Must be greater than -1
+    :return:
+    """
+
+    unit = unit.lower()
+    unit_enum = ["minute", "hour", "day", "week", "month"]
+    assert unit in unit_enum, "Value provided for unit is invalid."
+    assert units >= -1, "Value provided for units must be -1 for all time or greater."
+
+    response = requests.get(url=f"https://api-ssl.bitly.com/v4/bitlinks/{bitlink}/countries?unit={unit}&units={units}",
                             headers={"Authorization": f"Bearer {auth_token}"})
 
     if response.status_code != 200:
-        raise Exception
+        raise Exception("Non 200 error code received from bitly endpoint.")
+
+    return {d["value"]: d["clicks"] for d in list(response.json()["metrics"])}
+
+
+
