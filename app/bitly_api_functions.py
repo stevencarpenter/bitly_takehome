@@ -5,8 +5,8 @@ from datetime import datetime as dt, timedelta
 def get_default_user_group(auth_token) -> str:
     """
 
-    :param auth_token:
-    :return:
+    :param auth_token: bitly auth token
+    :return: string for the default_group_guid
     """
 
     response = requests.get(url="https://api-ssl.bitly.com/v4/user",
@@ -21,7 +21,7 @@ def get_bitlinks(auth_token, group_guid) -> list:
 
     :param auth_token: bitly auth token
     :param group_guid: bitly group_id to get links for
-    :return: list of bitlink ids
+    :return: list of bitlink ids that are a part of the default_group_guid
     """
     response = requests.get(url=f"https://api-ssl.bitly.com/v4/groups/{group_guid}/bitlinks?size=1",
                             headers={"Authorization": f"Bearer {auth_token}"})
@@ -53,7 +53,7 @@ def get_country_clicks(auth_token, bitlink, unit,  units=30) -> dict:
     :param unit: unit of time for the lookback units. Must be a member of
                  unit_enum list defined below.
     :param units: number of units to look back. Must be greater than -1
-    :return:
+    :return: dictionary of {country: clicks}
     """
 
     unit = unit.lower()
