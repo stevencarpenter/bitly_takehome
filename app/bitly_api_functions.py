@@ -3,10 +3,10 @@ from datetime import datetime as dt, timedelta
 
 
 def get_default_user_group(auth_token) -> str:
-    """
+    """ Get the default_group_guid for the auth token.
 
-    :param auth_token: bitly auth token
-    :return: string for the default_group_guid
+    :param auth_token: bitly auth token.
+    :return: string for the default_group_guid.
     """
 
     response = requests.get(url="https://api-ssl.bitly.com/v4/user",
@@ -19,9 +19,9 @@ def get_default_user_group(auth_token) -> str:
 def get_bitlinks(auth_token, group_guid) -> list:
     """
 
-    :param auth_token: bitly auth token
-    :param group_guid: bitly group_id to get links for
-    :return: list of bitlink ids that are a part of the default_group_guid
+    :param auth_token: bitly auth token.
+    :param group_guid: bitly group_id to get links for.
+    :return: list of bitlink ids that are a part of the default_group_guid.
     """
     response = requests.get(url=f"https://api-ssl.bitly.com/v4/groups/{group_guid}/bitlinks?size=1",
                             headers={"Authorization": f"Bearer {auth_token}"})
@@ -43,17 +43,17 @@ def get_bitlinks(auth_token, group_guid) -> list:
         return links
 
 
-def get_country_clicks(auth_token, bitlink, unit,  units=30) -> dict:
+def get_country_clicks(auth_token, bitlink, unit="day",  units=30) -> dict:
     """
     Takes a bitlink and params to determine lookback period and returns
     a dictionary of countries and thier click totals.
 
-    :param auth_token: bitly auth token
-    :param bitlink: bitlink id which is the url without the https://
+    :param auth_token: bitly auth token.
+    :param bitlink: bitlink id which is the url without the https://.
     :param unit: unit of time for the lookback units. Must be a member of
                  unit_enum list defined below.
-    :param units: number of units to look back. Must be greater than -1
-    :return: dictionary of {country: clicks}
+    :param units: number of units to look back. Must be greater than -1.
+    :return: dictionary of {country: clicks}.
     """
 
     unit = unit.lower()
@@ -68,6 +68,22 @@ def get_country_clicks(auth_token, bitlink, unit,  units=30) -> dict:
         raise Exception("Non 200 error code received from bitly endpoint.")
 
     return {d["value"]: d["clicks"] for d in list(response.json()["metrics"])}
+
+
+def average_clicks_per_country(bitlinks, units) -> dict:
+    """
+    Average out the clicks per country based on the units prescribed.
+
+    :param bitlinks: dictionary of {country: clicks}
+    :param units: int of number of units to aveerage on
+    :return:
+    """
+
+    assert units >= 1, "Cannot average over values less than 1."
+    if bool(bitlinks is False):
+        raise Exception("Cannot average empty dict")
+    return {k: v/units for (k, v) in bitlinks.items()}
+
 
 
 
