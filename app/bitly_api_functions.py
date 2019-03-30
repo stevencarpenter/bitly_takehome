@@ -1,5 +1,4 @@
 import requests
-from datetime import datetime as dt, timedelta
 
 
 def get_default_user_group(auth_token) -> str:

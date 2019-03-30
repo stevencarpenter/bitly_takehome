@@ -5,14 +5,12 @@ from collections import Counter
 from bitly_api_functions import *
 from flask import Flask, jsonify
 from flask import request
-from flask_restful import Api
 
 app = Flask(__name__)
-api = Api(app)
 
 
 @app.errorhandler(403)
-def access_denied(error=None):
+def access_denied():
     message = {
         "status":  403,
         "message": "No access token supplied. Access denied: " + request.url,
@@ -25,15 +23,17 @@ def access_denied(error=None):
 
 @app.route("/bitly/clicks/average")
 def get_average_clicks():
-    if "access_token" in request.args:
+    if "access_token" not in request.args:
+        return access_denied()
+    else:
         token = request.args["access_token"]
+        unit = request.args["unit"] if "unit" in request.args else "day"
+        units = int(request.args["units"]) if "units" in request.args else 30
         default_user_group = get_default_user_group(token)
         bitlinks = get_bitlinks(token, default_user_group)
-        clicks_per_bitlink = [get_country_clicks(token, bitlink) for bitlink in bitlinks]
-        return jsonify(
-            average_clicks_per_country(dict(functools.reduce(operator.add, map(Counter, clicks_per_bitlink))), 30))
-    else:
-        return access_denied()
+        clicks_per_bitlink = [get_country_clicks(token, bitlink, unit, units) for bitlink in bitlinks]
+        summed_clicks = dict(functools.reduce(operator.add, map(Counter, clicks_per_bitlink)))
+        return jsonify(average_clicks_per_country(summed_clicks, units))
 
 
 if __name__ == "__main__":
