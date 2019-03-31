@@ -13,7 +13,6 @@ def access_denied():
     }
     resp = jsonify(message)
     resp.status_code = 403
-
     return resp
 
 

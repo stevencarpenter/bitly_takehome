@@ -6,8 +6,8 @@ import requests
 
 
 def get_default_user_group(auth_token) -> str:
-    """ Get the default_group_guid for the auth token.
-
+    """
+    Get the default_group_guid for the auth token.
     :param auth_token: bitly auth token.
     :return: string for the default_group_guid.
     """
@@ -21,7 +21,7 @@ def get_default_user_group(auth_token) -> str:
 
 def get_bitlinks(auth_token, group_guid) -> list:
     """
-
+    Get all the bitlinks for a given group_guid
     :param auth_token: bitly auth token.
     :param group_guid: bitly group_id to get links for.
     :return: list of bitlink ids that are a part of the default_group_guid.
@@ -73,11 +73,21 @@ def get_country_clicks(auth_token, bitlink, unit="day",  units=30) -> dict:
     return flatten_clicks(list(response.json()["metrics"]))
 
 
-def flatten_clicks(li):
+def flatten_clicks(li) -> dict:
+    """
+    Simplify the list of objects that have a verbose value to click structure into a dict
+    :param li: list of objects
+    :return: dictionary of value : clicks
+    """
     return {d["value"]: d["clicks"] for d in li}
 
 
-def sum_clicks(clicks_per_bitlink):
+def sum_clicks(clicks_per_bitlink) -> dict:
+    """
+    Sum the clicks if there are multiple per country.
+    :param clicks_per_bitlink:  flattened dictionary of the form {"US": 4, "UK": 6,... "US": 8}.
+    :return: dictionary with no duplicate keys and their values summed.
+    """
     return dict(functools.reduce(operator.add, map(Counter, clicks_per_bitlink)))
 
 
@@ -86,7 +96,7 @@ def average_clicks_per_country(bitlinks, units) -> dict:
     Average out the clicks per country based on the units prescribed.
 
     :param bitlinks: dictionary of {country: clicks}
-    :param units: int of number of units to aveerage on
+    :param units: int of number of units to average on
     :return:
     """
 
@@ -94,7 +104,3 @@ def average_clicks_per_country(bitlinks, units) -> dict:
     if bool(bitlinks is False):
         raise Exception("Cannot average empty dict")
     return {k: v/units for (k, v) in bitlinks.items()}
-
-
-
-
