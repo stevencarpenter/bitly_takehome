@@ -1,7 +1,3 @@
-import functools
-import operator
-from collections import Counter
-
 from bitly_api_functions import *
 from flask import Flask, jsonify
 from flask import request
@@ -32,7 +28,7 @@ def get_average_clicks():
         default_user_group = get_default_user_group(token)
         bitlinks = get_bitlinks(token, default_user_group)
         clicks_per_bitlink = [get_country_clicks(token, bitlink, unit, units) for bitlink in bitlinks]
-        summed_clicks = dict(functools.reduce(operator.add, map(Counter, clicks_per_bitlink)))
+        summed_clicks = sum_clicks(clicks_per_bitlink)
         return jsonify(average_clicks_per_country(summed_clicks, units))
 
 

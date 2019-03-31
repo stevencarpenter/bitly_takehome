@@ -1,3 +1,7 @@
+import functools
+import operator
+from collections import Counter
+
 import requests
 
 
@@ -66,7 +70,15 @@ def get_country_clicks(auth_token, bitlink, unit="day",  units=30) -> dict:
     if response.status_code != 200:
         raise Exception("Non 200 error code received from bitly endpoint.")
 
-    return {d["value"]: d["clicks"] for d in list(response.json()["metrics"])}
+    return flatten_clicks(list(response.json()["metrics"]))
+
+
+def flatten_clicks(li):
+    return {d["value"]: d["clicks"] for d in li}
+
+
+def sum_clicks(clicks_per_bitlink):
+    return dict(functools.reduce(operator.add, map(Counter, clicks_per_bitlink)))
 
 
 def average_clicks_per_country(bitlinks, units) -> dict:
